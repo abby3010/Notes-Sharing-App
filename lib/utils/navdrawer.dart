@@ -104,19 +104,15 @@ class _NavDrawerState extends State<NavDrawer> {
                   try {
                     authService.signOutUser();
                     print("SignOut Successful!");
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LandingPage(),
-                      ),
-                    );
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, "/", (Route<dynamic> route) => false);
                   } catch (e) {
                     print(e);
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: Text("Login Error"),
+                          title: Text("LogOut Error"),
                           content: Text(
                               "Some error occured!\nYou are still Signed In"),
                           actions: [

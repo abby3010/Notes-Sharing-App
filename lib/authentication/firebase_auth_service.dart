@@ -10,14 +10,14 @@ class FirebaseAuthService implements AuthService {
 
   // UserCredential is a custom Class which we made in user.dart
   // User is a firebase Auth class which comes inbuilt with firebase_auth package.
-  UserCredentials _userFromFirebase(User user) {
+  UserCredentials _userFromFirebase(User user, {String displayName}) {
     if (user == null) {
       return null;
     }
     return UserCredentials(
       uid: user.uid,
       email: user.email,
-      displayName: user.displayName,
+      displayName: displayName ?? user.displayName,
       photoUrl: user.photoURL,
     );
   }
@@ -33,10 +33,20 @@ class FirebaseAuthService implements AuthService {
   }
 
   @override
-  Future<UserCredentials> createUser(String email, String password) async {
+  Future<UserCredentials> createUser(String email, String password,
+      {String displayName}) async {
     final newUser = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email, password: password);
-    return _userFromFirebase(newUser.user);
+    if (displayName == null) {
+      return _userFromFirebase(newUser.user);
+    } else {
+      return _userFromFirebase(newUser.user, displayName: displayName);
+    }
+  }
+
+  // @override
+  bool isNewUser() {
+
   }
 
   @override

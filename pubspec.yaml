@@ -37,7 +37,7 @@ dependencies:
   file_picker: ^2.1.4
   pdf: ^1.12.0
   path_provider: ^1.6.24
-
+  firebase_storage: ^5.2.0
 
 
 dev_dependencies:

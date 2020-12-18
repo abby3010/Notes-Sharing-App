@@ -1,4 +1,6 @@
 import 'package:bed_notes/authentication/auth_service.dart';
+import 'package:bed_notes/authentication/loginPage.dart';
+import 'package:bed_notes/screens/addPDFScreen.dart';
 import 'package:bed_notes/utils/landingpage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +25,12 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.indigo,
         ),
-        home: LandingPage(),
+        initialRoute: "/",
+        routes: {
+          "/": (context)=>LandingPage(),
+          "/login": (context)=> LoginPage(),
+          "/addPDF": (context)=> AddPDFScreen(),
+        },
       ),
     );
   }

@@ -1,7 +1,9 @@
 import 'package:bed_notes/authentication/auth_service.dart';
-// import 'package:bed_notes/authentication/firebase_auth_service.dart';
+import 'package:bed_notes/authentication/user.dart';
 import 'package:bed_notes/homepage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final formKey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
   FormType _formType = FormType.login;
   // Checking Submission from the Form
   bool validateAndSave() {
@@ -27,13 +30,33 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  void _createFirebaseDocument(UserCredentials authUser) async {
+    final usersRef =
+        FirebaseFirestore.instance.collection('Users').doc(authUser.email);
+    usersRef.get().then((docSnapshot) => {
+          if (!docSnapshot.exists)
+            {
+              usersRef
+                  .set({
+                    "name": authUser.displayName,
+                    "email": authUser.email,
+                    // creating empty "urls" array in FireStore to store Storage urls
+                    "urls": [],
+                    // creating empty "file_names" array in FireStore to store title of the file from user for above urls.
+                    "file_names": [],
+                  })
+                  .then((value) => print("User's Document Added"))
+                  .catchError((error) => print(
+                      "Failed to add user: $error")) // create the document
+            }
+        });
+  }
+
   // logging In
   void validateAndSubmit(BuildContext _context) async {
-    print("I'm here");
     final authServiceProvider =
         Provider.of<AuthService>(_context, listen: false);
     final authService = authServiceProvider.getCurrentUser();
-    // print("AuthUser::::::::" + authService.currentUser().email);
     if (validateAndSave()) {
       try {
         if (_formType == FormType.login) {
@@ -45,13 +68,26 @@ class _LoginPageState extends State<LoginPage> {
             MaterialPageRoute(builder: (_context) => HomePage()),
           );
         } else {
-          await authService.createUser(
+          final authUser = await authService.createUser(
               emailController.text, passwordController.text);
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(authUser.email)
+              .set({
+                "name": authUser.displayName,
+                "email": authUser.email,
+                // creating empty "urls" array in FireStore to store Storage urls
+                "urls": [],
+                // creating empty "file_names" array in FireStore to store title of the file from user for above urls.
+                "file_names": [],
+              })
+              .then((value) => print("User Added"))
+              .catchError((error) => print("Failed to add user: $error"));
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_context) => HomePage()),
           );
-          print("Sign In Successful! ");
+          print("Sign In Successful!");
         }
       } catch (e) {
         print(e);
@@ -98,14 +134,20 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Fooduko Login"),
+        title: Text("B.Ed Notes Login/SignUp"),
       ),
-      body: Container(
-        padding: EdgeInsets.all(10),
-        child: Form(
-          key: formKey,
-          child: Column(
-            children: buildTextInputs() + buildSubmitButtons(),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Form(
+              key: formKey,
+              child: Column(
+                children: buildTextInputs() +
+                    [SizedBox(height: 10)] +
+                    buildSubmitButtons(),
+              ),
+            ),
           ),
         ),
       ),
@@ -146,7 +188,23 @@ class _LoginPageState extends State<LoginPage> {
           return null;
         },
         obscureText: true,
-      )
+      ),
+      _formType == FormType.register
+          ? TextFormField(
+              controller: nameController,
+              decoration: InputDecoration(
+                labelText: "Your Name",
+              ),
+              validator: (value) {
+                if (value.isEmpty) {
+                  return "Enter your name";
+                }
+                return null;
+              },
+            )
+          : SizedBox(
+              height: 10,
+            ),
     ];
   }
 
@@ -155,13 +213,98 @@ class _LoginPageState extends State<LoginPage> {
       return [
         // Login Button
         RaisedButton(
+          onPressed: () => validateAndSubmit(context),
+          padding: EdgeInsets.fromLTRB(12, 12, 12, 12),
           child: Text(
             "Login",
-            style: TextStyle(fontSize: 20.0),
+            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
           ),
-          onPressed: () => validateAndSubmit(context),
+          color: Theme.of(context).accentColor,
+          textColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: new BorderRadius.circular(20.0),
+          ),
         ),
 
+        // Google SignIn Button
+        Padding(
+          padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
+          child: OutlineButton(
+            splashColor: Colors.grey,
+            onPressed: () async {
+              final authServiceProvider =
+                  Provider.of<AuthService>(context, listen: false);
+              try {
+                final authUser = await authServiceProvider.signInWithGoogle();
+                _createFirebaseDocument(authUser);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_context) => HomePage()),
+                );
+                print("login successful");
+              } catch (signUpError) {
+                String message;
+                if (signUpError is PlatformException) {
+                  if (signUpError.code == 'ERROR_EMAIL_ALREADY_IN_USE') {
+                    message =
+                        "This email is already in use!\nEnter new email or login instead.";
+                  } else if (signUpError.code == 'ERROR_WEAK_PASSWORD') {
+                    message = "Password is weak!\nAdd symbols or numbers.";
+                  } else if (signUpError.code == 'ERROR_INVALID_EMAIL') {
+                    message =
+                        "Invalid Email!\nPlease check your email address.";
+                  }
+                }
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Error"),
+                      content: Text(message),
+                      actions: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+                          child: FlatButton(
+                            child: Text("Try Again"),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+            },
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+            highlightElevation: 0,
+            borderSide: BorderSide(color: Colors.grey),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Image(
+                      image: AssetImage("assets/images/google_logo.png"),
+                      height: 35.0),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Text(
+                      'Sign in with Google',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
         // Create an Account Panel
         FlatButton(
           child: Text(
@@ -173,13 +316,99 @@ class _LoginPageState extends State<LoginPage> {
       ];
     } else {
       return [
-        // Login Button
+        // Sign Up Button
         RaisedButton(
+          onPressed: () => validateAndSubmit(context),
+          padding: EdgeInsets.fromLTRB(12, 12, 12, 12),
           child: Text(
             "Sign Up",
-            style: TextStyle(fontSize: 20.0),
+            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
           ),
-          onPressed: () => validateAndSubmit(context),
+          color: Theme.of(context).accentColor,
+          textColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: new BorderRadius.circular(20.0),
+          ),
+        ),
+
+        // Google SignIn Button
+        Padding(
+          padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
+          child: OutlineButton(
+            splashColor: Colors.grey,
+            onPressed: () async {
+              final authServiceProvider =
+                  Provider.of<AuthService>(context, listen: false);
+              try {
+                final authUser = await authServiceProvider.signInWithGoogle();
+                _createFirebaseDocument(authUser);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_context) => HomePage()),
+                );
+                print("Login successful");
+              } catch (signUpError) {
+                String message;
+                if (signUpError is PlatformException) {
+                  if (signUpError.code == 'ERROR_EMAIL_ALREADY_IN_USE') {
+                    message =
+                        "This email is already in use!\nEnter new email or login instead.";
+                  } else if (signUpError.code == 'ERROR_WEAK_PASSWORD') {
+                    message = "Password is weak!\nAdd symbols or numbers.";
+                  } else if (signUpError.code == 'ERROR_INVALID_EMAIL') {
+                    message =
+                        "Invalid Email!\nPlease check your email address.";
+                  }
+                }
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Error"),
+                      content: Text(message),
+                      actions: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+                          child: FlatButton(
+                            child: Text("Try Again"),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+            },
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+            highlightElevation: 0,
+            borderSide: BorderSide(color: Colors.grey),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Image(
+                      image: AssetImage("assets/images/google_logo.png"),
+                      height: 35.0),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Text(
+                      'Sign Up with Google',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
         ),
 
         // Create an Account Panel

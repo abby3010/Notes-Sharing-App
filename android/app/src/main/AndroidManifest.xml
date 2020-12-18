@@ -7,9 +7,10 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="bed_notes"
+        android:label="B.Ed Notes"
         android:icon="@mipmap/ic_launcher">
         <activity
+            android:screenOrientation="sensorPortrait"
             android:name=".MainActivity"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
