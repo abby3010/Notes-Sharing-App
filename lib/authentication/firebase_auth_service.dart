@@ -1,4 +1,5 @@
-import 'package:bed_notes/authentication/user.dart';
+
+import 'package:bed_notes/utils/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 

@@ -1,6 +1,6 @@
 import 'package:bed_notes/authentication/auth_service.dart';
-import 'package:bed_notes/authentication/user.dart';
 import 'package:bed_notes/homepage.dart';
+import 'package:bed_notes/utils/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _createFirebaseDocument(UserCredentials authUser) async {
+  Future<void> _createFirebaseDocument(UserCredentials authUser) async {
     final usersRef =
         FirebaseFirestore.instance.collection('Users').doc(authUser.email);
     usersRef.get().then((docSnapshot) => {
@@ -63,10 +63,8 @@ class _LoginPageState extends State<LoginPage> {
           await authService.signInwithEmailPassword(
               emailController.text, passwordController.text);
           print("Sign In Successful!");
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_context) => HomePage()),
-          );
+          Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
+
         } else {
           final authUser = await authService.createUser(
               emailController.text, passwordController.text);
@@ -80,13 +78,13 @@ class _LoginPageState extends State<LoginPage> {
                 "urls": [],
                 // creating empty "file_names" array in FireStore to store title of the file from user for above urls.
                 "file_names": [],
+                // create an empty datetime field:
+                "datetime": [],
               })
               .then((value) => print("User Added"))
               .catchError((error) => print("Failed to add user: $error"));
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_context) => HomePage()),
-          );
+
+          Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
           print("Sign In Successful!");
         }
       } catch (e) {
@@ -134,7 +132,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("B.Ed Notes Login/SignUp"),
+        title: Text("Login/SignUp"),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -143,12 +141,26 @@ class _LoginPageState extends State<LoginPage> {
             child: Form(
               key: formKey,
               child: Column(
-                children: buildTextInputs() +
-                    [SizedBox(height: 10)] +
-                    buildSubmitButtons(),
+                children: buildTextInputs() + buildSubmitButtons(),
               ),
             ),
           ),
+        ),
+      ),
+      floatingActionButton: RaisedButton(
+        onPressed: () {
+          Navigator.pushNamedAndRemoveUntil(
+              context, "/home", (Route<dynamic> route) => false);
+        },
+        padding: EdgeInsets.fromLTRB(12, 12, 12, 12),
+        child: Text(
+          "Skip",
+          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+        ),
+        color: Theme.of(context).accentColor,
+        textColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: new BorderRadius.circular(30.0),
         ),
       ),
     );
@@ -156,6 +168,14 @@ class _LoginPageState extends State<LoginPage> {
 
   List<Widget> buildTextInputs() {
     return [
+      Text(
+        "B.Ed Notes",
+        style: TextStyle(
+          color: Theme.of(context).accentColor,
+          fontSize: 35,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
       // Email TextField
       TextFormField(
         controller: emailController,
@@ -205,6 +225,7 @@ class _LoginPageState extends State<LoginPage> {
           : SizedBox(
               height: 10,
             ),
+      SizedBox(height: 10),
     ];
   }
 
@@ -236,7 +257,7 @@ class _LoginPageState extends State<LoginPage> {
                   Provider.of<AuthService>(context, listen: false);
               try {
                 final authUser = await authServiceProvider.signInWithGoogle();
-                _createFirebaseDocument(authUser);
+                await _createFirebaseDocument(authUser);
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_context) => HomePage()),
@@ -341,7 +362,7 @@ class _LoginPageState extends State<LoginPage> {
                   Provider.of<AuthService>(context, listen: false);
               try {
                 final authUser = await authServiceProvider.signInWithGoogle();
-                _createFirebaseDocument(authUser);
+                await _createFirebaseDocument(authUser);
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_context) => HomePage()),

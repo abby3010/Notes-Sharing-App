@@ -16,11 +16,24 @@ class _HomePageState extends State<HomePage> {
       drawer: NavDrawer(),
       appBar: AppBar(
         title: Text('B.Ed Notes'),
+        actions: user == null
+            ? [
+                FlatButton(
+                  onPressed: () {
+                    Navigator.popAndPushNamed(context, "/login");
+                  },
+                  child: Text(
+                    "Login",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ]
+            : null,
       ),
-      body: Text("B.Ed Notes App"),
+      body: buildNotesList(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          if (user.email == null) {
+          if (user == null) {
             Navigator.of(context).pushNamedAndRemoveUntil(
                 "/login", (Route<dynamic> route) => false);
           } else {
@@ -30,6 +43,12 @@ class _HomePageState extends State<HomePage> {
         tooltip: 'Upload PDF',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  Widget buildNotesList() {
+    return Center(
+      child: Text("Hello World!"),
     );
   }
 }

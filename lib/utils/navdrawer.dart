@@ -1,7 +1,5 @@
 import 'package:bed_notes/authentication/auth_service.dart';
-// import 'package:bed_notes/authentication/firebase_auth_service.dart';
-// import 'package:bed_notes/authentication/loginPage.dart';
-import 'package:bed_notes/utils/landingpage.dart';
+import 'package:bed_notes/utils/landingPage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,11 +12,46 @@ class NavDrawer extends StatefulWidget {
 
 class _NavDrawerState extends State<NavDrawer> {
   Drawer drawer = Drawer();
+
+  Widget copyrightWidget() {
+    return Align(
+      alignment: FractionalOffset.bottomCenter,
+      child: Column(
+        children: [
+         SizedBox(height:150),
+          Row(
+            children: [
+              SizedBox(
+                width: 15,
+              ),
+              Image.asset(
+                "assets/images/IndianFlag.png",
+                height: 50,
+                width: 50,
+              ),
+              SizedBox(
+                width: 15,
+              ),
+              Text("Make In India Initiative"),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.copyright, size: 15,),
+              Text(" 2021 Abhay Ubhale", style: TextStyle(fontSize: 12),)
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final AuthService authService = Provider.of<AuthService>(context);
     final user = authService.currentUser();
-    if (user.email == null) {
+    if (user == null) {
       drawer = Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -36,19 +69,17 @@ class _NavDrawerState extends State<NavDrawer> {
               icon: Icon(Icons.login),
               text: "Login",
               onTap: () {
-                LandingPage();
+                Navigator.popAndPushNamed(context, "/");
               },
             ),
             DrawerLabel(
               icon: Icon(Icons.feedback_sharp),
               text: "Feedback",
-              onTap: () {},
+              onTap: () {
+                Navigator.popAndPushNamed(context, "/feedback");
+              },
             ),
-            DrawerLabel(
-              icon: Icon(Icons.contact_page),
-              text: "Contact Us",
-              onTap: () {},
-            ),
+            copyrightWidget(),
           ],
         ),
       );
@@ -58,80 +89,68 @@ class _NavDrawerState extends State<NavDrawer> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: user.photoUrl != null
-                  ? BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(user.photoUrl),
-                      ),
-                    )
-                  : BoxDecoration(color: Theme.of(context).accentColor),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    child: Icon(
-                      Icons.account_circle,
-                      size: 40,
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    user.displayName ?? user.email,
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                    ),
-                  )
-                ],
+              decoration: BoxDecoration(
+                color: Theme.of(context).accentColor,
               ),
+              child:user.photoUrl != null
+              ? Container(
+                decoration:  BoxDecoration(
+                        image: DecorationImage(
+                          fit: BoxFit.contain,
+                          image: NetworkImage(user.photoUrl),
+                        ),
+                      ))
+                    : Container(
+                        decoration:
+                            BoxDecoration(color: Theme.of(context).accentColor),
+                        child: Center(
+                          child: Text(
+                            // initials of user name
+                            user.displayName != null
+                                ? (user.displayName.split(" ")[0][0].toUpperCase() +
+                                    user.displayName.split(" ")[1][0]).toUpperCase()
+                                : (user.email.split("@")[0]).toUpperCase(),
+                            style: TextStyle(fontSize: 25, color: Colors.white),
+                          ),
+                        ),
+                      ),
+              ),
+
+            //
+            DrawerLabel(
+              icon: Icon(Icons.account_circle),
+              text: user.displayName ?? user.email,
+              onTap: () {},
             ),
             DrawerLabel(
               icon: Icon(Icons.add),
               text: "Add Notes",
-              onTap: () {},
+              onTap: () {
+                Navigator.popAndPushNamed(context, "/addPDF");
+              },
+            ),
+            DrawerLabel(
+              icon: Icon(Icons.notes),
+              text: "My Notes",
+              onTap: () {
+                Navigator.popAndPushNamed(context, "/myNotes");
+              },
             ),
             DrawerLabel(
               icon: Icon(Icons.person),
-              text: "Profile",
-              onTap: () {},
+              text: "My Profile",
+              onTap: () {
+                Navigator.popAndPushNamed(context, "/myProfile");
+              },
             ),
             DrawerLabel(
-                icon: Icon(Icons.logout),
-                text: "Logout",
-                onTap: () {
-                  try {
-                    authService.signOutUser();
-                    print("SignOut Successful!");
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, "/", (Route<dynamic> route) => false);
-                  } catch (e) {
-                    print(e);
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text("LogOut Error"),
-                          content: Text(
-                              "Some error occured!\nYou are still Signed In"),
-                          actions: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(15, 10, 15, 10),
-                              child: FlatButton(
-                                child: Text("Try Again"),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  }
-                }),
+              icon: Icon(Icons.feedback_sharp),
+              text: "Feedback",
+              onTap: () {
+                Navigator.popAndPushNamed(context, "/feedback");
+              },
+            ),
+            copyrightWidget(),
           ],
         ),
       );

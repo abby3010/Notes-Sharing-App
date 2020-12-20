@@ -1,5 +1,5 @@
 import 'package:bed_notes/authentication/firebase_auth_service.dart';
-import 'package:bed_notes/authentication/user.dart';
+import 'package:bed_notes/utils/user.dart';
 
 abstract class AuthService {
   FirebaseAuthService getCurrentUser();
