@@ -21,20 +21,22 @@ class _ShowPDFScreenState extends State<ShowPDFScreen> {
         title: Text(widget.filename),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Center(
-          child: widget.url != null
-              ? PDF.network(
+        padding: const EdgeInsets.all(8.0),
+        child: widget.url != null
+            ? Center(
+                child: PDF.network(
                   widget.url,
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
-                )
-              : PDF.file(
+                ),
+              )
+            : Center(
+                child: PDF.file(
                   widget.file,
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
                 ),
-        ),
+              ),
       ),
     );
   }

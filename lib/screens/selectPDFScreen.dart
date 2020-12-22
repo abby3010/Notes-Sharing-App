@@ -15,8 +15,7 @@ class SelectPDFScreen extends StatefulWidget {
 }
 
 class _SelectPDFScreenState extends State<SelectPDFScreen> {
-  int counter=1;
-  bool uploaded;
+  int counter = 1;
   String appBarText = " Select File";
   final formKey = GlobalKey<FormState>();
   File file;
@@ -165,9 +164,6 @@ class _SelectPDFScreenState extends State<SelectPDFScreen> {
                       ),
                       onPressed: () async {
                         await _selectPDF(context);
-                        setState(() {
-                          uploaded = true;
-                        });
                       },
                     ),
                   ],
@@ -182,36 +178,32 @@ class _SelectPDFScreenState extends State<SelectPDFScreen> {
       floatingActionButton: file != null
           ? FloatingActionButton(
               onPressed: () {
-                if (uploaded == true) {
-                  Navigator.of(context).popAndPushNamed("/myNotes");
-                } else {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text("Uploading..."),
-                        content: counter < 3
-                            ? Text("Please wait while we upload your file.")
-                            : Text(
-                                "Please wait!\nEither the file size is big or please check your internet connection."),
-                        actions: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-                            child: FlatButton(
-                              child: Text("OK"),
-                              onPressed: () {
-                                setState(() {
-                                  ++counter;
-                                });
-                                Navigator.of(context).pop();
-                              },
-                            ),
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Uploading..."),
+                      content: counter < 3
+                          ? Text("Please wait while we upload your file.")
+                          : Text(
+                          "Please wait!\nEither the file size is big or please check your internet connection."),
+                      actions: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+                          child: FlatButton(
+                            child: Text("OK"),
+                            onPressed: () {
+                              setState(() {
+                                ++counter;
+                              });
+                              Navigator.of(context).pop();
+                            },
                           ),
-                        ],
-                      );
-                    },
-                  );
-                }
+                        ),
+                      ],
+                    );
+                  },
+                );
               },
               tooltip: 'Preview PDF',
               child: Icon(

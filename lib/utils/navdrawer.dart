@@ -1,5 +1,4 @@
 import 'package:bed_notes/authentication/auth_service.dart';
-import 'package:bed_notes/utils/landingPage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,36 +13,25 @@ class _NavDrawerState extends State<NavDrawer> {
   Drawer drawer = Drawer();
 
   Widget copyrightWidget() {
-    return Align(
-      alignment: FractionalOffset.bottomCenter,
-      child: Column(
-        children: [
-         SizedBox(height:150),
-          Row(
-            children: [
-              SizedBox(
-                width: 15,
-              ),
-              Image.asset(
-                "assets/images/IndianFlag.png",
-                height: 50,
-                width: 50,
-              ),
-              SizedBox(
-                width: 15,
-              ),
-              Text("Make In India Initiative"),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.copyright, size: 15,),
-              Text(" 2021 Abhay Ubhale", style: TextStyle(fontSize: 12),)
-            ],
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        Row(
+          children: [
+            SizedBox(
+              width: 15,
+            ),
+            Image.asset(
+              "assets/images/IndianFlag.png",
+              height: 40,
+              width: 40,
+            ),
+            SizedBox(
+              width: 15,
+            ),
+            Text("Make In India Initiative"),
+          ],
+        ),
+      ],
     );
   }
 
@@ -59,7 +47,7 @@ class _NavDrawerState extends State<NavDrawer> {
             DrawerHeader(
               child: Text(
                 "Welcome!\nLogin to share your notes.",
-                style: TextStyle(color: Colors.white, fontSize: 25),
+                style: TextStyle(color: Colors.white, fontSize: 20),
               ),
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColorDark,
@@ -79,6 +67,7 @@ class _NavDrawerState extends State<NavDrawer> {
                 Navigator.popAndPushNamed(context, "/feedback");
               },
             ),
+            SizedBox(height: 0.6, child: Container(color: Colors.black)),
             copyrightWidget(),
           ],
         ),
@@ -112,9 +101,9 @@ class _NavDrawerState extends State<NavDrawer> {
                                 : (user.email.split("@")[0]).toUpperCase(),
                             style: TextStyle(fontSize: 25, color: Colors.white),
                           ),
-                        ),
                       ),
-              ),
+                    ),
+            ),
 
             //
             DrawerLabel(
@@ -122,6 +111,7 @@ class _NavDrawerState extends State<NavDrawer> {
               text: user.displayName ?? user.email,
               onTap: () {},
             ),
+            SizedBox(height: 0.6, child: Container(color: Colors.black)),
             DrawerLabel(
               icon: Icon(Icons.add),
               text: "Add Notes",
@@ -150,6 +140,7 @@ class _NavDrawerState extends State<NavDrawer> {
                 Navigator.popAndPushNamed(context, "/feedback");
               },
             ),
+            SizedBox(height: 0.6, child: Container(color: Colors.black)),
             copyrightWidget(),
           ],
         ),

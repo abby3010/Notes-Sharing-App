@@ -15,8 +15,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<AuthService>(context).currentUser();
-    TextEditingController nameController =
-        TextEditingController(text: user.displayName);
     return Scaffold(
       drawer: NavDrawer(),
       appBar: AppBar(
@@ -38,7 +36,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              SizedBox(height: 50),
+              SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: Expanded(
@@ -101,7 +99,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                       color: Theme.of(context).accentColor,
                       textColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: new BorderRadius.circular(20.0),
+                        borderRadius: new BorderRadius.circular(30.0),
                       ),
                       onPressed: () async {
                         if (formKey.currentState.validate()) {
@@ -124,7 +122,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                                       actions: <Widget>[
                                         FlatButton(
                                           onPressed: () {
-                                            Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
+                                            Navigator.pushNamedAndRemoveUntil(
+                                                context,
+                                                "/home",
+                                                (route) => false);
                                           },
                                           child: const Text('OK'),
                                         ),
@@ -134,11 +135,29 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                                 ),
                               )
                               .catchError((error) =>
-                                  print("Failed to add user: $error"));
+                                  print("Failed to upload feedback: $error"));
                         }
                       },
                     ),
                   ),
+                ],
+              ),
+
+              SizedBox(
+                height: 20,
+              ),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.copyright,
+                    size: 20,
+                  ),
+                  Text(
+                    " 2021 Abhay Ubhale",
+                    style: TextStyle(fontSize: 15),
+                  )
                 ],
               ),
             ],

@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+
 class MyNotesScreen extends StatefulWidget {
   @override
   _MyNotesScreenState createState() => _MyNotesScreenState();
@@ -25,10 +26,12 @@ class _MyNotesScreenState extends State<MyNotesScreen> {
     return Scaffold(
       drawer: NavDrawer(),
       appBar: AppBar(
-        title: Row(children: [
-          Icon(Icons.drive_folder_upload),
-          Text(" My Uploaded Notes"),
-        ]),
+        title: Row(
+          children: [
+            Icon(Icons.drive_folder_upload),
+            Text(" My Uploaded Notes"),
+          ],
+        ),
       ),
       body: StreamBuilder(
           stream: getDocument(context),
@@ -38,7 +41,7 @@ class _MyNotesScreenState extends State<MyNotesScreen> {
                 child: CircularProgressIndicator(),
               );
             }
-            if(snapshot.hasError){
+            if (snapshot.hasError) {
               return Center(child: Text("Could not fetch your result :("));
             }
             var doc = snapshot.data.data();
@@ -46,7 +49,8 @@ class _MyNotesScreenState extends State<MyNotesScreen> {
               return ListView.builder(
                 itemCount: doc["urls"].length,
                 itemBuilder: (context, index) {
-                  var date = DateFormat('dd-MM-yyyy hh:mm:ss').format(doc["datetime"][index].toDate());
+                  var date = DateFormat('dd-MM-yyyy hh:mm:ss')
+                      .format(doc["datetime"][index].toDate());
                   return Card(
                     elevation: 5,
                     child: ListTile(
