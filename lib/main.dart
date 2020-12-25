@@ -3,7 +3,6 @@ import 'package:bed_notes/screens/feedbackScreen.dart';
 import 'package:bed_notes/screens/loginPage.dart';
 import 'package:bed_notes/screens/myNotesScreen.dart';
 import 'package:bed_notes/screens/myProfileScreen.dart';
-import 'package:bed_notes/screens/searchScreen.dart';
 import 'package:bed_notes/screens/selectPDFScreen.dart';
 import 'package:bed_notes/utils/landingPage.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -20,6 +19,7 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   // This widget is the root of application.
+  int appRestartCount = -1;
   @override
   Widget build(BuildContext context) {
     return Provider<AuthService>(
@@ -30,12 +30,11 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.indigo,
         ),
-        initialRoute: "/search",
+        initialRoute: initialScreen(),
         routes: {
           "/": (context) => LandingPage(),
           "/home": (context) => HomePage(),
           "/login": (context) => LoginPage(),
-          "/search": (context) => SearchScreen(),
           "/addPDF": (context) => SelectPDFScreen(),
           "/myNotes": (context) => MyNotesScreen(),
           "/myProfile": (context) => MyProfileScreen(),
@@ -43,5 +42,13 @@ class MyApp extends StatelessWidget {
         },
       ),
     );
+  }
+
+  String initialScreen() {
+    appRestartCount++;
+    if (appRestartCount == 1) {
+      return "/";
+    }
+    return "/home";
   }
 }

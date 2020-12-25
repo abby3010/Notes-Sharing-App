@@ -39,6 +39,30 @@ class _NavDrawerState extends State<NavDrawer> {
   Widget build(BuildContext context) {
     final AuthService authService = Provider.of<AuthService>(context);
     final user = authService.currentUser();
+
+    Widget _drawerNameWidget() {
+      return user.photoUrl != null
+          ? Container(
+              decoration: BoxDecoration(
+              image: DecorationImage(
+                fit: BoxFit.contain,
+                image: NetworkImage(user.photoUrl),
+              ),
+            ))
+          : Container(
+              decoration: BoxDecoration(color: Theme.of(context).accentColor),
+              child: Center(
+                child: Text(
+                  // initials of user name
+                  user.displayName != null
+                      ? (user.displayName.toUpperCase())
+                      : (user.email.split("@")[0]).toUpperCase(),
+                  style: TextStyle(fontSize: 25, color: Colors.white),
+                ),
+              ),
+            );
+    }
+
     if (user == null) {
       drawer = Drawer(
         child: ListView(
@@ -81,28 +105,7 @@ class _NavDrawerState extends State<NavDrawer> {
               decoration: BoxDecoration(
                 color: Theme.of(context).accentColor,
               ),
-              child:user.photoUrl != null
-              ? Container(
-                decoration:  BoxDecoration(
-                        image: DecorationImage(
-                          fit: BoxFit.contain,
-                          image: NetworkImage(user.photoUrl),
-                        ),
-                      ))
-                    : Container(
-                        decoration:
-                            BoxDecoration(color: Theme.of(context).accentColor),
-                        child: Center(
-                          child: Text(
-                            // initials of user name
-                            user.displayName != null
-                                ? (user.displayName.split(" ")[0][0].toUpperCase() +
-                                    user.displayName.split(" ")[1][0]).toUpperCase()
-                                : (user.email.split("@")[0]).toUpperCase(),
-                            style: TextStyle(fontSize: 25, color: Colors.white),
-                          ),
-                      ),
-                    ),
+              child: _drawerNameWidget(),
             ),
 
             //

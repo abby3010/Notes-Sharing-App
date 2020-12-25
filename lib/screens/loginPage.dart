@@ -19,6 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   FormType _formType = FormType.login;
+
   // Checking Submission from the Form
   bool validateAndSave() {
     final form = formKey.currentState;
@@ -64,7 +65,6 @@ class _LoginPageState extends State<LoginPage> {
               emailController.text, passwordController.text);
           print("Sign In Successful!");
           Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
-
         } else {
           final authUser = await authService.createUser(
               emailController.text, passwordController.text);
@@ -84,7 +84,12 @@ class _LoginPageState extends State<LoginPage> {
               .then((value) => print("User Added"))
               .catchError((error) => print("Failed to add user: $error"));
 
-          Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
+          await FirebaseFirestore.instance.collection("Users List").doc("list_of_users").update({
+            "users_list": FieldValue.arrayUnion([authUser.email]),
+          });
+
+          Navigator.pushNamedAndRemoveUntil(
+              context, "/home", (route) => false);
           print("Sign In Successful!");
         }
       } catch (e) {
