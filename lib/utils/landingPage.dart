@@ -21,7 +21,6 @@ class LandingPage extends StatelessWidget {
           } else {
             final user = snapshot.data;
             return user == null ? LoginPage() : HomePage();
-
           }
         });
   }

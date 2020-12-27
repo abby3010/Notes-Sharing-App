@@ -1,4 +1,3 @@
-
 import 'package:bed_notes/utils/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -11,14 +10,14 @@ class FirebaseAuthService implements AuthService {
 
   // UserCredential is a custom Class which we made in user.dart
   // User is a firebase Auth class which comes inbuilt with firebase_auth package.
-  UserCredentials _userFromFirebase(User user, {String displayName}) {
+  UserCredentials _userFromFirebase(User user) {
     if (user == null) {
       return null;
     }
     return UserCredentials(
       uid: user.uid,
       email: user.email,
-      displayName: displayName ?? user.displayName,
+      displayName: user.displayName,
       photoUrl: user.photoURL,
     );
   }
@@ -34,24 +33,18 @@ class FirebaseAuthService implements AuthService {
   }
 
   @override
-  Future<UserCredentials> createUser(String email, String password,
-      {String displayName}) async {
-    final newUser = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email, password: password);
-    if (displayName == null) {
-      return _userFromFirebase(newUser.user);
-    } else {
-      return _userFromFirebase(newUser.user, displayName: displayName);
-    }
-  }
-
-  // @override
-  bool isNewUser() {
-
+  Future<UserCredentials> createUser(
+      String email, String password, String displayName) async {
+    await _firebaseAuth
+        .createUserWithEmailAndPassword(email: email, password: password)
+        .then((result) {
+      return result.user.updateProfile(displayName: displayName);
+    });
+    return _userFromFirebase(_firebaseAuth.currentUser);
   }
 
   @override
-  Future<UserCredentials> signInwithEmailPassword(
+  Future<UserCredentials> signInWithEmailPassword(
       String email, String password) async {
     final authResult = await _firebaseAuth.signInWithEmailAndPassword(
         email: email, password: password);

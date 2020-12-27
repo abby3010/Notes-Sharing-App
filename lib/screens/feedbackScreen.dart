@@ -18,7 +18,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     return Scaffold(
       drawer: NavDrawer(),
       appBar: AppBar(
-        title: Text('B.Ed Notes Feedback Form'),
+        title: Text('B.Ed Notes Feedback Form', style: TextStyle(fontSize: 18),),
         actions: user.email == null
             ? [
                 FlatButton(
@@ -36,16 +36,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              SizedBox(height: 20),
+              SizedBox(height: 18),
               Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: Expanded(
                   child: Text(
-                    "Your reviews will help us to improve more. Openly address your problems with this app. Since we have kept this feedback system anonymous.",
+                    "Your reviews will help us to improve more. Openly address your suggestions or problems with this app, since we have kept this feedback system anonymous.",
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.left,
                     maxLines: 6,
-                    style: TextStyle(fontSize: 17),
+                    style: TextStyle(fontSize: 16),
                   ),
                 ),
               ),
@@ -57,7 +57,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   children: [
                     Text(
                       "Your Reviews:",
-                      style: TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 18),
                     ),
                   ],
                 ),
@@ -94,7 +94,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                       child: Text(
                         "Submit Feedback",
                         style: TextStyle(
-                            fontSize: 20.0, fontWeight: FontWeight.bold),
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       color: Theme.of(context).accentColor,
                       textColor: Colors.white,

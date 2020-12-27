@@ -34,6 +34,7 @@ class _SelectPDFScreenState extends State<SelectPDFScreen> {
         file = File(pickedFileResult.files.single.path);
         appBarText = " File Preview";
       });
+
       final firebase_storage.Reference storage = firebase_storage
           .FirebaseStorage.instance
           .ref()
@@ -48,7 +49,21 @@ class _SelectPDFScreenState extends State<SelectPDFScreen> {
           "file_names": FieldValue.arrayUnion([_nameController.text]),
           // append current date time
           "datetime": FieldValue.arrayUnion([Timestamp.now()]),
-        }).then((value) => showDialog<void>(
+        }).then(
+          (value) async => await FirebaseFirestore.instance
+              .collection("Random Notes")
+              .doc("Random Notes Doc")
+              .update({
+            "random_notes": FieldValue.arrayUnion([
+              {
+                "file_name": _nameController.text,
+                "url": url,
+                "uploaded_by": authUser.displayName,
+                "email": authUser.email,
+              }
+            ]),
+          }).then(
+            (value) => showDialog<void>(
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
@@ -65,7 +80,10 @@ class _SelectPDFScreenState extends State<SelectPDFScreen> {
                   ],
                 );
               },
-            ));
+            ),
+          ),
+        );
+
         Navigator.popAndPushNamed(context, "/myNotes");
       } on firebase_storage.FirebaseException {
         await showDialog<void>(
@@ -97,11 +115,11 @@ class _SelectPDFScreenState extends State<SelectPDFScreen> {
       appBar: AppBar(
         title: Row(children: [
           Icon(Icons.upload_file),
-          Text(appBarText),
+          Text(appBarText, style: TextStyle(fontSize: 18),),
         ]),
       ),
       body: Container(
-        padding: EdgeInsets.all(15),
+        padding: EdgeInsets.all(10),
         child: file == null
             ? Form(
                 key: formKey,
@@ -186,7 +204,7 @@ class _SelectPDFScreenState extends State<SelectPDFScreen> {
                       content: counter < 3
                           ? Text("Please wait while we upload your file.")
                           : Text(
-                          "Please wait!\nEither the file size is big or please check your internet connection."),
+                              "Please wait!\nEither the file size is big or please check your internet connection."),
                       actions: [
                         Padding(
                           padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),

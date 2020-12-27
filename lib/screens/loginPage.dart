@@ -61,19 +61,23 @@ class _LoginPageState extends State<LoginPage> {
     if (validateAndSave()) {
       try {
         if (_formType == FormType.login) {
-          await authService.signInwithEmailPassword(
+          await authService.signInWithEmailPassword(
               emailController.text, passwordController.text);
           print("Sign In Successful!");
           Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
         } else {
-          final authUser = await authService.createUser(
-              emailController.text, passwordController.text);
+          var authUser = await authService.createUser(
+              emailController.text, passwordController.text,  nameController.text);
+          print("User Name:::::::::::::_${authUser.displayName}_");
+          // if(authUser.displayName == null){
+          //   authUser.setDisplayName = nameController.text;
+          // }
           await FirebaseFirestore.instance
               .collection('Users')
               .doc(authUser.email)
               .set({
-                "name": authUser.displayName,
-                "email": authUser.email,
+                "name": nameController.text,
+                "email": emailController.text,
                 // creating empty "urls" array in FireStore to store Storage urls
                 "urls": [],
                 // creating empty "file_names" array in FireStore to store title of the file from user for above urls.
@@ -87,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
           await FirebaseFirestore.instance.collection("Users List").doc("list_of_users").update({
             "users_list": FieldValue.arrayUnion([authUser.email]),
           });
-
+          print("User added to Global User List");
           Navigator.pushNamedAndRemoveUntil(
               context, "/home", (route) => false);
           print("Sign In Successful!");
@@ -137,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Login/SignUp"),
+        title: Text("Login/SignUp", style: TextStyle(fontSize: 18),),
       ),
       body: Center(
         child: SingleChildScrollView(

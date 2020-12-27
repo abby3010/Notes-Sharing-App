@@ -8,9 +8,7 @@ class MyProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authUser = Provider.of<AuthService>(context).getCurrentUser();
     final user = authUser.currentUser();
-    final listName = user.displayName.split(" ");
-    final initials =
-        listName[0][0].toUpperCase() + listName[1][0].toUpperCase();
+
     return Scaffold(
       drawer: NavDrawer(),
       appBar: AppBar(
@@ -30,38 +28,39 @@ class MyProfileScreen extends StatelessWidget {
             top: MediaQuery.of(context).size.height / 20,
             child: Column(
               children: <Widget>[
-                Container(
-                    width: 150.0,
-                    height: 150.0,
-                    child: user.photoUrl == null
-                        ? Center(
-                            child: Container(
-                              child: Text(
-                                initials,
-                                style: TextStyle(
-                                    fontSize: 55,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800),
-                              ),
+                user.photoUrl == null
+                    ? ClipOval(
+                        child: Container(
+                          color: Colors.pinkAccent,
+                          height: 150.0,
+                          width: 150.0,
+                          child: Center(
+                            child: Text(
+                              user.displayName,
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 24),
+                              textAlign: TextAlign.center,
                             ),
-                          )
-                        : null,
-                    decoration: BoxDecoration(
-                        color: Colors.red,
-                        image: user.photoUrl != null
-                            ? DecorationImage(
-                                image: NetworkImage(user.photoUrl),
-                                fit: BoxFit.cover)
-                            : null,
-                        borderRadius: BorderRadius.all(Radius.circular(75.0)),
-                        boxShadow: [
-                          BoxShadow(blurRadius: 20.0, color: Colors.white)
-                        ])),
-                SizedBox(height: 10.0),
-                Text(
-                  user.displayName,
-                  style: TextStyle(fontSize: 30.0),
-                ),
+                          ),
+                        ),
+                      )
+                    : ClipOval(
+                        child: Container(
+                          color: Colors.pinkAccent,
+                          height: 150.0,
+                          width: 150.0,
+                          decoration: BoxDecoration(
+                              color: Colors.amber,
+                              image: user.photoUrl != null
+                                  ? DecorationImage(
+                                      image: NetworkImage(user.photoUrl),
+                                      fit: BoxFit.cover)
+                                  : null,
+                              boxShadow: [
+                                BoxShadow(blurRadius: 20.0, color: Colors.white)
+                              ]),
+                        ),
+                      ),
                 SizedBox(height: 10.0),
                 Text(
                   user.email,
@@ -122,11 +121,10 @@ class MyProfileScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(15.0),
                   child: Text(
-                      "Once you Logout, you won't be able to upload any notes. Although you can view notes uploaded by others.",
+                    "Once you Logout, you won't be able to upload any notes. Although you can view notes uploaded by others.",
                     style: TextStyle(fontSize: 15),
                     textAlign: TextAlign.center,
                   ),
-
                 ),
               ],
             ),

@@ -37,10 +37,9 @@ class _NavDrawerState extends State<NavDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    final AuthService authService = Provider.of<AuthService>(context);
-    final user = authService.currentUser();
-
+    final user = Provider.of<AuthService>(context).currentUser();
     Widget _drawerNameWidget() {
+      final _displayText = user.displayName.toUpperCase();
       return user.photoUrl != null
           ? Container(
               decoration: BoxDecoration(
@@ -48,15 +47,12 @@ class _NavDrawerState extends State<NavDrawer> {
                 fit: BoxFit.contain,
                 image: NetworkImage(user.photoUrl),
               ),
-            ))
+            ),)
           : Container(
               decoration: BoxDecoration(color: Theme.of(context).accentColor),
               child: Center(
                 child: Text(
-                  // initials of user name
-                  user.displayName != null
-                      ? (user.displayName.toUpperCase())
-                      : (user.email.split("@")[0]).toUpperCase(),
+                  _displayText,
                   style: TextStyle(fontSize: 25, color: Colors.white),
                 ),
               ),
@@ -111,7 +107,7 @@ class _NavDrawerState extends State<NavDrawer> {
             //
             DrawerLabel(
               icon: Icon(Icons.account_circle),
-              text: user.displayName ?? user.email,
+              text: user.email,
               onTap: () {},
             ),
             SizedBox(height: 0.6, child: Container(color: Colors.black)),
@@ -127,6 +123,13 @@ class _NavDrawerState extends State<NavDrawer> {
               text: "My Notes",
               onTap: () {
                 Navigator.popAndPushNamed(context, "/myNotes");
+              },
+            ),
+            DrawerLabel(
+              icon: Icon(Icons.notes),
+              text: "My Starred Notes",
+              onTap: () {
+                Navigator.popAndPushNamed(context, "/myStarredNotes");
               },
             ),
             DrawerLabel(
