@@ -126,13 +126,6 @@ class _NavDrawerState extends State<NavDrawer> {
               },
             ),
             DrawerLabel(
-              icon: Icon(Icons.notes),
-              text: "My Starred Notes",
-              onTap: () {
-                Navigator.popAndPushNamed(context, "/myStarredNotes");
-              },
-            ),
-            DrawerLabel(
               icon: Icon(Icons.person),
               text: "My Profile",
               onTap: () {

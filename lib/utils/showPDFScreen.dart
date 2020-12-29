@@ -13,66 +13,34 @@ class ShowPDFScreen extends StatefulWidget {
       this.file,
       this.author,
       this.authorEmail});
+
   final String author;
   final String authorEmail;
   final String url;
   final File file;
   final String filename;
+
   @override
   _ShowPDFScreenState createState() => _ShowPDFScreenState();
 }
 
 class _ShowPDFScreenState extends State<ShowPDFScreen> {
-  var isStared = false;
-  Map<String, dynamic> fileMap;
-  IconButton star() {
-    return isStared
-        ? IconButton(
-            icon: Icon(Icons.star),
-            color: Colors.amberAccent,
-            onPressed: () {
-              setState(() {
-                if (isStared == false) {
-                  isStared = true;
-                } else {
-                  isStared = false;
-                }
-              });
-              Scaffold.of(context).showSnackBar(SnackBar(
-                content: Text("Added to starred notes"),
-              ));
-            },
-          )
-        : IconButton(
-            icon: Icon(Icons.star_border),
-            color: Colors.amberAccent,
-            onPressed: () {
-              setState(() {
-                if (isStared == false) {
-                  isStared = true;
-                } else {
-                  isStared = false;
-                }
-              });
-            },
-          );
-  }
-
+  // Map<String, dynamic> fileMap;
   @override
-  void initState() async{
+  void initState() {
     super.initState();
-    fileMap = {
-      "file_name": widget.filename,
-      "url": widget.url,
-      "uploaded_by": widget.author,
-      "author_email": widget.authorEmail,
-    };
-    print(fileMap);
+    // fileMap = {
+    //   "file_name": widget.filename,
+    //   "url": widget.url,
+    //   "uploaded_by": widget.author,
+    //   "author_email": widget.authorEmail,
+    // };
+    // print(fileMap);
   }
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<AuthService>(context).currentUser();
+    // final user = Provider.of<AuthService>(context).currentUser();
     return Scaffold(
       drawer: NavDrawer(),
       appBar: AppBar(
@@ -80,26 +48,6 @@ class _ShowPDFScreenState extends State<ShowPDFScreen> {
           widget.filename,
           style: TextStyle(fontSize: 18),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.star_border,
-              size: 30,
-              color: Colors.amber,
-            ),
-            onPressed: () async {
-              await FirebaseFirestore.instance
-                  .collection("Users")
-                  .doc(user.email)
-                  .update({
-                "starred_files": FieldValue.arrayUnion([fileMap]),
-              });
-              // print("My starred files::::::::::: " + user.starFiles.toString());
-              Scaffold.of(context)
-                  .showSnackBar(SnackBar(content: Text("File starred")));
-            },
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 8),

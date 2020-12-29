@@ -8,7 +8,7 @@ class FirebaseAuthService implements AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // UserCredential is a custom Class which we made in user.dart
+  // UserCredentials is a custom Class which we made in user.dart
   // User is a firebase Auth class which comes inbuilt with firebase_auth package.
   UserCredentials _userFromFirebase(User user) {
     if (user == null) {

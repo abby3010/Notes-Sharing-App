@@ -1,12 +1,52 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Modify this file to customize your launch splash screen -->
+<?xml version="1.0" encoding="utf-8"?><!-- Modify this file to customize your launch splash screen -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@android:color/white" />
 
+    <item>
+        <shape
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:shape="rectangle">
+            <gradient
+                android:angle="50"
+                android:endColor="#ff2cdf"
+                android:startColor="#0014ff" />
+        </shape>
+    </item>
     <!-- You can insert your own image assets here -->
-    <!-- <item>
+    <!--<item>
         <bitmap
             android:gravity="center"
-            android:src="@mipmap/launch_image" />
-    </item> -->
+            android:src="@drawable/ic_launcher" />
+    </item>-->
+    <item>
+        <TextView
+            android:id="@+id/text_view_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="B.Ed"
+            android:textColor="#ffffff"
+            android:textSize="36sp" />
+        <TextView
+            android:id="@+id/text_view_id1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_below="@id/text_view_id"
+            android:text="Notes"
+            android:textColor="#ffffff"
+            android:textSize="36sp" />
+    </item>
+    <item android:gravity="bottom">
+        <TextView
+            android:id="@+id/text_view_id1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_below="@id/text_view_id"
+            android:text="Copyright &#169; Abhay Ubhale, 2021"
+            android:textColor="#ffffff"
+            android:textSize="20sp" />
+    </item>
+
 </layer-list>

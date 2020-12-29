@@ -15,6 +15,7 @@ class SelectPDFScreen extends StatefulWidget {
 }
 
 class _SelectPDFScreenState extends State<SelectPDFScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   int counter = 1;
   String appBarText = " Select File";
   final formKey = GlobalKey<FormState>();
@@ -25,97 +26,133 @@ class _SelectPDFScreenState extends State<SelectPDFScreen> {
   Future<void> _selectPDF(BuildContext context) async {
     final UserCredentials authUser =
         Provider.of<AuthService>(context, listen: false).currentUser();
-    if (formKey.currentState.validate()) {
-      FilePickerResult pickedFileResult = await FilePicker.platform.pickFiles(
-        allowedExtensions: ["pdf"],
-        type: FileType.custom,
-      );
-      setState(() {
-        file = File(pickedFileResult.files.single.path);
-        appBarText = " File Preview";
-      });
-
-      final firebase_storage.Reference storage = firebase_storage
-          .FirebaseStorage.instance
-          .ref()
-          .child(authUser.email + "/" + _nameController.text + ".pdf");
-      try {
-        await storage.putFile(file);
-        final url = await storage.getDownloadURL();
-        await users.doc(authUser.email).update({
-          // append the current url in "urls" array in FireSto  re
-          "urls": FieldValue.arrayUnion([url]),
-          // append the name from users input to "file_names" array in FireStore
-          "file_names": FieldValue.arrayUnion([_nameController.text]),
-          // append current date time
-          "datetime": FieldValue.arrayUnion([Timestamp.now()]),
-        }).then(
-          (value) async => await FirebaseFirestore.instance
-              .collection("Random Notes")
-              .doc("Random Notes Doc")
-              .update({
-            "random_notes": FieldValue.arrayUnion([
-              {
-                "file_name": _nameController.text,
-                "url": url,
-                "uploaded_by": authUser.displayName,
-                "email": authUser.email,
-              }
-            ]),
+    final doc = await FirebaseFirestore.instance
+        .collection("Random Notes")
+        .doc("Random Notes Doc")
+        .get();
+    if (!doc["file_names"].contains(_nameController.text)) {
+      if (formKey.currentState.validate()) {
+        FilePickerResult pickedFileResult = await FilePicker.platform.pickFiles(
+          allowedExtensions: ["pdf"],
+          type: FileType.custom,
+        );
+        var fileSplit = pickedFileResult.files.single.path.split(".");
+        if (fileSplit[fileSplit.length - 1] == "pdf") {
+          setState(() {
+            file = File(pickedFileResult.files.single.path);
+            appBarText = " File Preview";
+          });
+        } else {
+          showDialog<void>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Only PDF files are allowed"),
+                content: Text("Please select appropriate PDF file only."),
+                actions: <Widget>[
+                  FlatButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+        final firebase_storage.Reference storage = firebase_storage
+            .FirebaseStorage.instance
+            .ref()
+            .child(authUser.email + "/" + _nameController.text + ".pdf");
+        try {
+          await storage.putFile(file);
+          final url = await storage.getDownloadURL();
+          await users.doc(authUser.email).update({
+            // append the current url in "urls" array in FireSto  re
+            "urls": FieldValue.arrayUnion([url]),
+            // append the name from users input to "file_names" array in FireStore
+            "file_names": FieldValue.arrayUnion([_nameController.text]),
+            // append current date time
+            "datetime": FieldValue.arrayUnion([Timestamp.now()]),
           }).then(
-            (value) => showDialog<void>(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text("Upload Complete!"),
-                  content: Text("File Uploaded successfully!"),
-                  actions: <Widget>[
-                    FlatButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                      },
-                      child: const Text('OK'),
-                    ),
-                  ],
-                );
-              },
+            (value) async => await FirebaseFirestore.instance
+                .collection("Random Notes")
+                .doc("Random Notes Doc")
+                .update({
+              "random_notes": FieldValue.arrayUnion([
+                {
+                  "file_name": _nameController.text,
+                  "url": url,
+                  "uploaded_by": authUser.displayName,
+                  "email": authUser.email,
+                }
+              ]),
+            }).then(
+              (value) => showDialog<void>(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text("Upload Complete!"),
+                    content: Text("File Uploaded successfully!"),
+                    actions: <Widget>[
+                      FlatButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
-        );
+          );
 
-        Navigator.popAndPushNamed(context, "/myNotes");
-      } on firebase_storage.FirebaseException {
-        await showDialog<void>(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text("Upload Failed!"),
-              content: Text("Some Error Occurred while uploading the file!"),
-              actions: <Widget>[
-                FlatButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Try Again'),
-                ),
-              ],
-            );
-          },
-        );
+          Navigator.popAndPushNamed(context, "/myNotes");
+        } on firebase_storage.FirebaseException {
+          await showDialog<void>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Upload Failed!"),
+                content: Text("Some Error Occurred while uploading the file!"),
+                actions: <Widget>[
+                  FlatButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Try Again'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
       }
+    } else {
+      _scaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            content: Text('The name already exists!'),
+            duration: Duration(seconds: 3),
+          ));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       drawer: NavDrawer(),
       appBar: AppBar(
         title: Row(children: [
           Icon(Icons.upload_file),
-          Text(appBarText, style: TextStyle(fontSize: 18),),
+          Text(
+            appBarText,
+            style: TextStyle(fontSize: 18),
+          ),
         ]),
       ),
       body: Container(
@@ -230,8 +267,8 @@ class _SelectPDFScreenState extends State<SelectPDFScreen> {
               ),
             )
           : FloatingActionButton(
-              onPressed: () {
-                _selectPDF(context);
+              onPressed: () async {
+                await _selectPDF(context);
               },
               tooltip: 'Select PDF',
               child: Icon(

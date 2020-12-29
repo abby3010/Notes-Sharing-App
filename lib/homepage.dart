@@ -3,6 +3,7 @@ import 'package:bed_notes/utils/navdrawer.dart';
 import 'package:bed_notes/utils/showPDFScreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -58,8 +59,9 @@ class _HomePageState extends State<HomePage> {
           if (snapshot.hasData) {
             var doc = snapshot.data.data();
             var notes = doc["random_notes"];
+            notes.shuffle();
             return RefreshIndicator(
-              onRefresh: () async{
+              onRefresh: () async {
                 setState(() {});
               },
               child: ListView.builder(
@@ -70,8 +72,12 @@ class _HomePageState extends State<HomePage> {
                     child: ListTile(
                       // contentPadding: EdgeInsets.only(left: 20),
                       title: Text(notes[index]["file_name"]),
-                      subtitle: Text( notes[index]["uploaded_by"]),
-                      leading: Icon(Icons.file_present, color: Colors.yellow, size: 27,),
+                      subtitle: Text(notes[index]["uploaded_by"]),
+                      leading: Icon(
+                        Icons.file_present,
+                        color: Colors.amber,
+                        size: 27,
+                      ),
                       trailing: IconButton(
                         icon: Icon(Icons.share),
                         onPressed: () {},
@@ -100,9 +106,9 @@ class _HomePageState extends State<HomePage> {
           if (snapshot.hasError) {
             print(snapshot.error);
             return Center(
-              child: Text("Unable to load notes" +
-                  "Ensure proper internet connection" +
-                  "OR" +
+              child: Text("Unable to load notes\n" +
+                  "Ensure proper internet connection\n" +
+                  "OR\n" +
                   "Restart the App"),
             );
           }
@@ -129,32 +135,6 @@ class _HomePageState extends State<HomePage> {
 }
 
 class DataSearch extends SearchDelegate {
-  final cities = [
-    "Bhandup",
-    "Mumbai",
-    "Delhi",
-    "Dubai",
-    "Indore",
-    "Lucknow",
-    "Indore",
-    "kanpur",
-    "Chennai",
-    "Agra",
-    "Rajkot",
-    "Jaipur",
-    "Faridabad",
-    "Pune",
-    "Ghaziabad",
-  ];
-
-  final recentCities = [
-    "Bhandup",
-    "Mumbai",
-    "Delhi",
-    "Indore",
-    "Lucknow",
-  ];
-
   @override
   List<Widget> buildActions(BuildContext context) {
     // actions for app bar
@@ -190,28 +170,67 @@ class DataSearch extends SearchDelegate {
   @override
   Widget buildSuggestions(BuildContext context) {
     // show when someone searches for something
-    final suggestionList = query.isEmpty
-        ? recentCities
-        : cities.where((element) => element.startsWith(query)).toList();
-    return ListView.builder(
-      itemBuilder: (context, index) => Card(
-        child: ListTile(
-          leading: Icon(Icons.insert_drive_file_rounded),
-          title: RichText(
-            text: TextSpan(
-                text: suggestionList[index].substring(0, query.length),
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                children: [
-                  TextSpan(
-                    text: suggestionList[index].substring(query.length),
-                    style: TextStyle(color: Colors.grey),
+
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("Random Notes")
+          .doc("Random Notes Doc")
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          var doc = snapshot.data.data();
+          final List metaData = doc["random_notes"];
+          final List fileNames = doc["file_names"];
+          final List<String> recentSearch = [];
+          final List mapList = query.isEmpty
+              ? recentSearch
+              : metaData
+                  .where((element) => element["file_name"].startsWith(query))
+                  .toList();
+          final suggestionList = query.isEmpty
+              ? recentSearch
+              : fileNames
+                  .where((element) => element.startsWith(query))
+                  .toList();
+          return ListView.builder(
+            itemCount: suggestionList.length,
+            itemBuilder: (context, index) {
+              return Card(
+                child: ListTile(
+                  leading: Icon(Icons.insert_drive_file_rounded),
+                  title: RichText(
+                    text: TextSpan(
+                        text: suggestionList[index].substring(0, query.length),
+                        style: TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
+                        children: [
+                          TextSpan(
+                            text: suggestionList[index].substring(query.length),
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ]),
                   ),
-                ]),
-          ),
-        ),
-      ),
-      itemCount: suggestionList.length,
+                  onTap: () {
+                    recentSearch.add(suggestionList[index]);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ShowPDFScreen(
+                          filename: mapList[index]["file_name"],
+                          url: mapList[index]["url"],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          );
+        }
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
     );
   }
 }

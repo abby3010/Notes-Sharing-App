@@ -3,7 +3,6 @@ import 'package:bed_notes/screens/feedbackScreen.dart';
 import 'package:bed_notes/screens/loginPage.dart';
 import 'package:bed_notes/screens/myNotesScreen.dart';
 import 'package:bed_notes/screens/myProfileScreen.dart';
-import 'package:bed_notes/screens/myStarredNotesScreen.dart';
 import 'package:bed_notes/screens/selectPDFScreen.dart';
 import 'package:bed_notes/utils/landingPage.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -42,7 +41,6 @@ class MyApp extends StatelessWidget {
           "/myNotes": (context) => MyNotesScreen(),
           "/myProfile": (context) => MyProfileScreen(),
           "/feedback": (context) => FeedbackScreen(),
-          "/myStarredNotes": (context)=> MyStarredNotesScreen(),
         },
       ),
     );

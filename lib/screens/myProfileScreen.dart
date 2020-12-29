@@ -46,11 +46,9 @@ class MyProfileScreen extends StatelessWidget {
                       )
                     : ClipOval(
                         child: Container(
-                          color: Colors.pinkAccent,
                           height: 150.0,
                           width: 150.0,
                           decoration: BoxDecoration(
-                              color: Colors.amber,
                               image: user.photoUrl != null
                                   ? DecorationImage(
                                       image: NetworkImage(user.photoUrl),
