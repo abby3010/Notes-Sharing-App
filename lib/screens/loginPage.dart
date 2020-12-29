@@ -3,7 +3,8 @@ import 'package:bed_notes/homepage.dart';
 import 'package:bed_notes/utils/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
+// import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -11,7 +12,7 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-enum FormType { login, register }
+enum FormType { login, register, forgetPassword }
 
 class _LoginPageState extends State<LoginPage> {
   final formKey = GlobalKey<FormState>();
@@ -19,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   FormType _formType = FormType.login;
+  bool emailSent = false;
 
   // Checking Submission from the Form
   bool validateAndSave() {
@@ -65,13 +67,10 @@ class _LoginPageState extends State<LoginPage> {
               emailController.text, passwordController.text);
           print("Sign In Successful!");
           Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
-        } else {
-          var authUser = await authService.createUser(
-              emailController.text, passwordController.text,  nameController.text);
+        } else if (_formType == FormType.register) {
+          var authUser = await authService.createUser(emailController.text,
+              passwordController.text, nameController.text);
           print("User Name:::::::::::::_${authUser.displayName}_");
-          // if(authUser.displayName == null){
-          //   authUser.setDisplayName = nameController.text;
-          // }
           await FirebaseFirestore.instance
               .collection('Users')
               .doc(authUser.email)
@@ -88,13 +87,17 @@ class _LoginPageState extends State<LoginPage> {
               .then((value) => print("User Added"))
               .catchError((error) => print("Failed to add user: $error"));
 
-          await FirebaseFirestore.instance.collection("Users List").doc("list_of_users").update({
+          await FirebaseFirestore.instance
+              .collection("Users List")
+              .doc("list_of_users")
+              .update({
             "users_list": FieldValue.arrayUnion([authUser.email]),
           });
           print("User added to Global User List");
-          Navigator.pushNamedAndRemoveUntil(
-              context, "/home", (route) => false);
+          Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
           print("Sign In Successful!");
+        } else {
+          await authService.sendPasswordResetEmail(emailController.text);
         }
       } catch (e) {
         print(e);
@@ -137,11 +140,23 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
+  void moveToForgetPassword() {
+    formKey.currentState.reset();
+    setState(() {
+      _formType = FormType.forgetPassword;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Login/SignUp", style: TextStyle(fontSize: 18),),
+        title: Text(
+          _formType == FormType.forgetPassword
+              ? "Reset Password"
+              : "Login/SignUp",
+          style: TextStyle(fontSize: 18),
+        ),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -150,7 +165,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Form(
               key: formKey,
               child: Column(
-                children: buildTextInputs() + buildSubmitButtons(),
+                children: (buildTextInputs() + buildSubmitButtons()),
               ),
             ),
           ),
@@ -176,6 +191,27 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   List<Widget> buildTextInputs() {
+    if (_formType == FormType.forgetPassword) {
+      return [
+        TextFormField(
+          controller: emailController,
+          decoration: InputDecoration(
+              labelText: "Email", hintText: "Email with which you login"),
+          validator: (value) {
+            if (value.isEmpty) {
+              return "Enter Registered Email";
+            } else if (!value.contains(RegExp(
+                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+"))) {
+              return "Enter valid email address";
+            }
+            return null;
+          },
+        ),
+        SizedBox(
+          height: 30,
+        ),
+      ];
+    }
     return [
       Text(
         "B.Ed Notes",
@@ -218,6 +254,13 @@ class _LoginPageState extends State<LoginPage> {
         },
         obscureText: true,
       ),
+      _formType == FormType.login
+          ? TextButton(
+              child: Text("Forget Password?"),
+              onPressed: moveToForgetPassword,
+            )
+          : SizedBox(),
+
       _formType == FormType.register
           ? TextFormField(
               controller: nameController,
@@ -266,45 +309,16 @@ class _LoginPageState extends State<LoginPage> {
                   Provider.of<AuthService>(context, listen: false);
               try {
                 final authUser = await authServiceProvider.signInWithGoogle();
-                await _createFirebaseDocument(authUser);
+                await _createFirebaseDocument(
+                  authUser,
+                );
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_context) => HomePage()),
                 );
                 print("login successful");
               } catch (signUpError) {
-                String message;
-                if (signUpError is PlatformException) {
-                  if (signUpError.code == 'ERROR_EMAIL_ALREADY_IN_USE') {
-                    message =
-                        "This email is already in use!\nEnter new email or login instead.";
-                  } else if (signUpError.code == 'ERROR_WEAK_PASSWORD') {
-                    message = "Password is weak!\nAdd symbols or numbers.";
-                  } else if (signUpError.code == 'ERROR_INVALID_EMAIL') {
-                    message =
-                        "Invalid Email!\nPlease check your email address.";
-                  }
-                }
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text("Error"),
-                      content: Text(message),
-                      actions: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-                          child: FlatButton(
-                            child: Text("Try Again"),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
+                print(signUpError);
               }
             },
             shape:
@@ -344,6 +358,38 @@ class _LoginPageState extends State<LoginPage> {
           onPressed: moveToRegister,
         ),
       ];
+    } else if (_formType == FormType.forgetPassword) {
+      return [
+        RaisedButton(
+          onPressed: () {
+            setState(() {
+              emailSent = true;
+            });
+            validateAndSubmit(context);
+          },
+          padding: EdgeInsets.fromLTRB(12, 12, 12, 12),
+          child: Text(
+            "Submit",
+            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+          ),
+          color: Theme.of(context).accentColor,
+          textColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: new BorderRadius.circular(20.0),
+          ),
+        ),
+        emailSent
+            ? Text(
+                "A password reset link has been sent to ${emailController.text}\n\nAfter resetting your password, enter updated password in the login screen")
+            : SizedBox(),
+        FlatButton(
+          child: Text(
+            "Return Back",
+            style: TextStyle(fontSize: 20.0),
+          ),
+          onPressed: moveToLogin,
+        ),
+      ];
     } else {
       return [
         // Sign Up Button
@@ -378,38 +424,7 @@ class _LoginPageState extends State<LoginPage> {
                 );
                 print("Login successful");
               } catch (signUpError) {
-                String message;
-                if (signUpError is PlatformException) {
-                  if (signUpError.code == 'ERROR_EMAIL_ALREADY_IN_USE') {
-                    message =
-                        "This email is already in use!\nEnter new email or login instead.";
-                  } else if (signUpError.code == 'ERROR_WEAK_PASSWORD') {
-                    message = "Password is weak!\nAdd symbols or numbers.";
-                  } else if (signUpError.code == 'ERROR_INVALID_EMAIL') {
-                    message =
-                        "Invalid Email!\nPlease check your email address.";
-                  }
-                }
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text("Error"),
-                      content: Text(message),
-                      actions: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-                          child: FlatButton(
-                            child: Text("Try Again"),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
+                print(signUpError);
               }
             },
             shape:

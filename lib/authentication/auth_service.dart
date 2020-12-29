@@ -8,6 +8,7 @@ abstract class AuthService {
   Future<UserCredentials> signInWithEmailPassword(
       String email, String password);
   Future<UserCredentials> signInWithGoogle();
+  Future<void> sendPasswordResetEmail(String email);
   Future signOutUser();
   UserCredentials currentUser();
   void dispose();

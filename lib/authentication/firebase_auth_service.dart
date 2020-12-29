@@ -65,6 +65,11 @@ class FirebaseAuthService implements AuthService {
   }
 
   @override
+  Future<void> sendPasswordResetEmail(String email) async{
+    return _firebaseAuth.sendPasswordResetEmail(email: email);
+  }
+
+  @override
   Future signOutUser() async {
     return _firebaseAuth.signOut();
   }

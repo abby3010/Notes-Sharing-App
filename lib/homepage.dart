@@ -3,7 +3,6 @@ import 'package:bed_notes/utils/navdrawer.dart';
 import 'package:bed_notes/utils/showPDFScreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -77,10 +76,6 @@ class _HomePageState extends State<HomePage> {
                         Icons.file_present,
                         color: Colors.amber,
                         size: 27,
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.share),
-                        onPressed: () {},
                       ),
                       // isThreeLine: true,
                       // dense: true,

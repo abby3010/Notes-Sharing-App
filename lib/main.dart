@@ -19,8 +19,6 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   // This widget is the root of application.
-  int appRestartCount = -1;
-
   @override
   Widget build(BuildContext context) {
     return Provider<AuthService>(
@@ -44,13 +42,5 @@ class MyApp extends StatelessWidget {
         },
       ),
     );
-  }
-
-  String initialScreen() {
-    appRestartCount++;
-    if (appRestartCount == 1) {
-      return "/";
-    }
-    return "/home";
   }
 }
